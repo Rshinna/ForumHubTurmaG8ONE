@@ -1,10 +1,13 @@
 package br.com.alura.ForumHub.domain.usuario;
 
 import br.com.alura.ForumHub.domain.perfil.Perfil;
+import br.com.alura.ForumHub.domain.resposta.Resposta;
+import br.com.alura.ForumHub.domain.topico.Topico;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -20,11 +23,23 @@ public class Usuario {
     @NotBlank
     @Email
     private String email;
+
     private String senha;
 
+    @OneToMany(mappedBy = "autor")
+    private List<Topico> topicos;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "usuarios_perfis",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "perfil_id")
+    )
     private Set<Perfil> perfis;
+
+    @OneToMany(mappedBy = "autor")
+    private List<Resposta> respostas;
 
     public Usuario() {}
     public Usuario(Long id, String nome, String email, String senha, Set<Perfil> perfis) {
