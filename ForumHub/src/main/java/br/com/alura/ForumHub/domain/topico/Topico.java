@@ -4,11 +4,18 @@ import br.com.alura.ForumHub.domain.curso.Curso;
 import br.com.alura.ForumHub.domain.resposta.Resposta;
 import br.com.alura.ForumHub.domain.usuario.Usuario;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class Topico {
 
     @Id
@@ -30,5 +37,15 @@ public class Topico {
     private Curso curso;
 
     @OneToMany(mappedBy = "topico")
-    private List<Resposta> respostas;
-}
+    private List<Resposta> respostas = new ArrayList<>();
+
+    public Topico(String titulo, String mensagem, Curso curso, Usuario autor) {
+        this.titulo = titulo;
+        this.mensagem = mensagem;
+        this.curso = curso;
+        this.autor = autor;
+        this.dataCriacao = LocalDateTime.now();
+        this.status = StatusTopico.NAO_RESPONDIDO;
+    }
+
+    }

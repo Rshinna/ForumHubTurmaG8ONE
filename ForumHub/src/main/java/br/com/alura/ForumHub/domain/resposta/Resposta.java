@@ -3,10 +3,18 @@ package br.com.alura.ForumHub.domain.resposta;
 import br.com.alura.ForumHub.domain.topico.Topico;
 import br.com.alura.ForumHub.domain.usuario.Usuario;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Resposta {
 
     @Id
@@ -18,66 +26,11 @@ public class Resposta {
     @ManyToOne
     private Topico topico;
 
-    private LocalDateTime dataCriacao = LocalDateTime.now();
-
     @ManyToOne
     private Usuario autor;
 
+    private LocalDateTime dataCriacao = LocalDateTime.now();
+
     private Boolean solucao = false;
 
-    public Resposta() {}
-    public Resposta(String mensagem, Topico topico, Usuario autor) {
-        this.mensagem = mensagem;
-        this.topico = topico;
-        this.autor = autor;
-    }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getMensagem() {
-        return mensagem;
-    }
-
-    public void setMensagem(String mensagem) {
-        this.mensagem = mensagem;
-    }
-
-    public Topico getTopico() {
-        return topico;
-    }
-
-    public void setTopico(Topico topico) {
-        this.topico = topico;
-    }
-
-    public LocalDateTime getDataCriacao() {
-        return dataCriacao;
-    }
-
-    public void setDataCriacao(LocalDateTime dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
-    public Usuario getAutor() {
-        return autor;
-    }
-
-    public void setAutor(Usuario autor) {
-        this.autor = autor;
-    }
-
-    public Boolean getSolucao() {
-        return solucao;
-    }
-
-    public void setSolucao(Boolean solucao) {
-        this.solucao = solucao;
-    }
 }
