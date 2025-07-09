@@ -1,13 +1,14 @@
 package br.com.alura.ForumHub.controller;
 
-import br.com.alura.ForumHub.domain.curso.CursoRepository;
+import br.com.alura.ForumHub.repository.CursoRepository;
 import br.com.alura.ForumHub.domain.curso.Curso;
 import br.com.alura.ForumHub.domain.topico.Topico;
-import br.com.alura.ForumHub.domain.topico.TopicoRepository;
-import br.com.alura.ForumHub.domain.topico.TopicoRequestDTO;
-import br.com.alura.ForumHub.domain.topico.TopicoResponseDTO;
+import br.com.alura.ForumHub.repository.TopicoRepository;
+import br.com.alura.ForumHub.dto.requestDTO.TopicoRequestDTO;
+import br.com.alura.ForumHub.dto.responseDTO.TopicoResponseDTO;
 import br.com.alura.ForumHub.domain.usuario.Usuario;
-import br.com.alura.ForumHub.usuario.UsuarioRepository;
+import br.com.alura.ForumHub.infra.erros.ErroDTO;
+import br.com.alura.ForumHub.repository.UsuarioRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,9 @@ public class TopicoController {
     private UsuarioRepository usuarioRepository;
 
     @PostMapping
-    public ResponseEntity<TopicoResponseDTO> cadastrar(@RequestBody @Valid TopicoRequestDTO dto) {
+    public ResponseEntity<?> cadastrar(@RequestBody @Valid TopicoRequestDTO dto) {
       if (topicoRepository.existsByTituloAndMensagem(dto.titulo(), dto.mensagem())) {
-          return ResponseEntity.badRequest().body(null);
+          return ResponseEntity.badRequest().body(new ErroDTO("Tópico já existe!"));
       }
 
       Curso curso = cursoRepository.findByNome(dto.nomeCurso());
@@ -59,6 +60,8 @@ public class TopicoController {
       return ResponseEntity.created(uri).body(response);
 
     }
+
+
 
 
 }

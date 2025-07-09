@@ -1,4 +1,4 @@
-package br.com.alura.ForumHub.domain.topico;
+package br.com.alura.ForumHub.dto.responseDTO;
 
 import java.time.LocalDateTime;
 

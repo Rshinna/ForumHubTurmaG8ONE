@@ -1,6 +1,7 @@
-package br.com.alura.ForumHub.domain.topico;
+package br.com.alura.ForumHub.dto.requestDTO;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record TopicoRequestDTO(
         @NotBlank
@@ -9,6 +10,7 @@ public record TopicoRequestDTO(
         String mensagem,
         @NotBlank
         String nomeCurso,
+        @NotNull
         Long autorId
 ) {}
 
