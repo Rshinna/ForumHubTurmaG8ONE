@@ -14,11 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/topicos")
@@ -114,6 +117,60 @@ public class TopicoController {
                         topico.getDataCriacao(),
                         topico.getStatus().name()
                 )).toList();
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> detalhar(@PathVariable Long id) {
+        Topico topico = topicoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico com ID " + id + " não encontrado!"));
+
+        TopicoResponseDTO resposta = new TopicoResponseDTO(
+                topico.getId(),
+                topico.getTitulo(),
+                topico.getMensagem(),
+                topico.getCurso().getNome(),
+                topico.getAutor().getNome(),
+                topico.getDataCriacao(),
+                topico.getStatus().name()
+        );
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody @Valid TopicoRequestDTO dto){
+        Optional<Topico> topicoOptional = topicoRepository.findById(id);
+
+     if(topicoOptional.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErroDTO("Tópico com ID " + " não encontrado!"));
+     }
+
+     Topico topico = topicoOptional.get();
+     if(topicoRepository.existsByTituloAndMensagem(dto.titulo(), dto.mensagem()) && (!topico.getTitulo().equals(dto.titulo()) || !topico.getMensagem().equals(dto.mensagem()))) {
+       return ResponseEntity.badRequest().body(new ErroDTO("Já existe outro tópico com esse título e mensagem!"));
+     }
+
+     Curso curso = cursoRepository.findByNome(dto.nomeCurso());
+     Usuario autor = usuarioRepository.findById(dto.autorId())
+             .orElseThrow(() -> new RuntimeException("Autor não encontrado!"));
+        topico.setTitulo(dto.titulo());
+        topico.setMensagem(dto.mensagem());
+        topico.setCurso(curso);
+        topico.setAutor(autor);
+
+        topicoRepository.save(topico);
+
+        TopicoResponseDTO resposta = new TopicoResponseDTO(
+                topico.getId(),
+                topico.getTitulo(),
+                topico.getMensagem(),
+                topico.getCurso().getNome(),
+                topico.getAutor().getNome(),
+                topico.getDataCriacao(),
+                topico.getStatus().name()
+        );
 
         return ResponseEntity.ok(resposta);
     }
