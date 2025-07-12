@@ -175,5 +175,18 @@ public class TopicoController {
         return ResponseEntity.ok(resposta);
     }
 
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> excluir(@PathVariable Long id) {
+
+        Optional<Topico> topicoOptional = topicoRepository.findById(id);
+
+        if(topicoOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErroDTO("Tópico com ID " + id + " não encontrado"));
+        }
+
+        topicoRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 
 }
