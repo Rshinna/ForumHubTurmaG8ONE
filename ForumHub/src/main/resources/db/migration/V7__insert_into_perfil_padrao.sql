@@ -1,0 +1,2 @@
+INSERT INTO perfil (nome) VALUES ('ROLE_USER');
+INSERT INTO perfil (nome) VALUES ('ROLE_ADMIN');
