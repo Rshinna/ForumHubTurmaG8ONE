@@ -1,6 +1,9 @@
 package br.com.alura.ForumHub.controller;
 
+import br.com.alura.ForumHub.domain.usuario.Usuario;
 import br.com.alura.ForumHub.dto.requestDTO.LoginRequestDTO;
+import br.com.alura.ForumHub.dto.responseDTO.TokenResponseDTO;
+import br.com.alura.ForumHub.infra.security.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +22,18 @@ public class AutenticacaoController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private TokenService tokenService;
+
     @PostMapping
-    public ResponseEntity<?> autenticar(@RequestBody @Valid LoginRequestDTO dados) {
-        var token = new UsernamePasswordAuthenticationToken(dados.login(), dados.senha());
-        var autenticacao = authenticationManager.authenticate(token);
+    public ResponseEntity<TokenResponseDTO> autenticar(@RequestBody @Valid LoginRequestDTO dados) {
+        var tokenAuth = new UsernamePasswordAuthenticationToken(dados.login(), dados.senha());
+        var autenticacao = authenticationManager.authenticate(tokenAuth);
 
-        SecurityContextHolder.getContext().setAuthentication(autenticacao);
+        var usuario = (Usuario) autenticacao.getPrincipal();
+        var jwt = tokenService.gerarToken(usuario);
 
-        return ResponseEntity.ok("Usuário autenticado com sucesso!");
+        var dto = new TokenResponseDTO(jwt, "Bearer");
+        return ResponseEntity.ok(dto);
     }
 }

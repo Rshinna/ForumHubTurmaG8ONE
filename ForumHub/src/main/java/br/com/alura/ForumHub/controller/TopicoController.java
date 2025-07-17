@@ -43,6 +43,11 @@ public class TopicoController {
       }
 
       Curso curso = cursoRepository.findByNome(dto.nomeCurso());
+      if(curso == null) {
+          return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                  .body(new ErroDTO("Curso " + dto.nomeCurso() + " não encontrado!"));
+      }
+
       Usuario autor = usuarioRepository.findById(dto.autorId())
               .orElseThrow(() -> new RuntimeException("Autor não encontrado!"));
 

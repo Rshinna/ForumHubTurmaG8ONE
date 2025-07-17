@@ -15,6 +15,7 @@ public class AutenticacaoService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
+
         return usuarioRepository.findByEmail(username);
     }
 }

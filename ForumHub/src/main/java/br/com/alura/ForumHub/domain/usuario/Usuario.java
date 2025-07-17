@@ -42,7 +42,7 @@ public class Usuario implements UserDetails {
     private List<Topico> topicos = new ArrayList<>();
 
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "usuarios_perfis",
             joinColumns = @JoinColumn(name = "usuario_id"),
@@ -61,31 +61,37 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getPassword() {
+
         return senha;
     }
 
     @Override
     public String getUsername() {
+
         return email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
+
         return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
+
         return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
+
         return true;
     }
 
     @Override
     public boolean isEnabled() {
+
         return true;
     }
 
