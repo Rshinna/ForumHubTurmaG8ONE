@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -106,6 +107,17 @@ public class RespostaController {
 
         Resposta resposta = respostaOptional.get();
 
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        boolean ehAdmin = usuarioLogado.getAuthorities().stream()
+                .anyMatch(p ->p.getAuthority().equals("ROLE_ADMIN"));
+
+        if(!resposta.getAutor().getId().equals(usuarioLogado.getId()) && !ehAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Você não tem permissão para editar esta resposta!");
+        }
+
         Usuario autor = usuarioRepository.findById(dto.autorId())
                 .orElseThrow(() -> new RuntimeException("Autor não encontrado!"));
 
@@ -133,11 +145,17 @@ public class RespostaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluir(@PathVariable Long id) {
-        Optional<Resposta> respostaOptional = respostaRepository.findById(id);
+        Resposta resposta = respostaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Resposta com ID " + id + " não encontrada!"
+                ));
 
-        if(respostaOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Resposta com ID " + id + " não encontrada!");
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+
+        if(!resposta.getAutor().getId().equals(usuarioLogado.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Você não tem permissão para excluir esta resposta.");
         }
 
         respostaRepository.deleteById(id);

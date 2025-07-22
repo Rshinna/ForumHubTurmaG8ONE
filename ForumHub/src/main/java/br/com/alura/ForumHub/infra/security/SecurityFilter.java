@@ -28,6 +28,11 @@ public class SecurityFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        if(request.getRequestURI().equals("/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         var token = recuperarToken(request);
 
         if (token != null) {
