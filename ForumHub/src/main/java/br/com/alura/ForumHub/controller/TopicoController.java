@@ -9,6 +9,7 @@ import br.com.alura.ForumHub.infra.erros.ErroDTO;
 import br.com.alura.ForumHub.repository.CursoRepository;
 import br.com.alura.ForumHub.repository.TopicoRepository;
 import br.com.alura.ForumHub.repository.UsuarioRepository;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/topicos")
+@SecurityRequirement(name = "bearer-key")
 public class TopicoController {
 
     @Autowired

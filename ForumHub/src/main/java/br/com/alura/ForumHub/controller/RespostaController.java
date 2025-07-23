@@ -8,6 +8,7 @@ import br.com.alura.ForumHub.dto.responseDTO.RespostaResponseDTO;
 import br.com.alura.ForumHub.repository.RespostaRepository;
 import br.com.alura.ForumHub.repository.TopicoRepository;
 import br.com.alura.ForumHub.repository.UsuarioRepository;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/respostas")
+@SecurityRequirement(name = "bearer-key")
 public class RespostaController {
 
     @Autowired

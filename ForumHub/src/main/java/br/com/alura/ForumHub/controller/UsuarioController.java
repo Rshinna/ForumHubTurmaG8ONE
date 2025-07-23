@@ -4,6 +4,7 @@ package br.com.alura.ForumHub.controller;
 import br.com.alura.ForumHub.domain.usuario.Usuario;
 import br.com.alura.ForumHub.dto.requestDTO.UsuarioRequestDTO;
 import br.com.alura.ForumHub.repository.UsuarioRepository;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/usuarios")
+@SecurityRequirement(name = "bearer-key")
 public class UsuarioController {
 
     @Autowired
