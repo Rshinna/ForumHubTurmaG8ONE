@@ -6,6 +6,7 @@ import br.com.alura.ForumHub.domain.usuario.Usuario;
 import br.com.alura.ForumHub.dto.requestDTO.TopicoRequestDTO;
 import br.com.alura.ForumHub.dto.responseDTO.TopicoResponseDTO;
 import br.com.alura.ForumHub.infra.erros.ErroDTO;
+import br.com.alura.ForumHub.infra.service.TopicoService;
 import br.com.alura.ForumHub.repository.CursoRepository;
 import br.com.alura.ForumHub.repository.TopicoRepository;
 import br.com.alura.ForumHub.repository.UsuarioRepository;
@@ -30,170 +31,44 @@ import java.util.Optional;
 public class TopicoController {
 
     @Autowired
-    private TopicoRepository topicoRepository;
-
-    @Autowired
-    private CursoRepository cursoRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private TopicoService topicoService;
 
     @PostMapping
-    public ResponseEntity<?> cadastrar(@RequestBody @Valid TopicoRequestDTO dto) {
-      if (topicoRepository.existsByTituloAndMensagem(dto.titulo(), dto.mensagem())) {
-          return ResponseEntity.badRequest().body(new ErroDTO("Tópico já existe!"));
-      }
-
-      Curso curso = cursoRepository.findByNome(dto.nomeCurso());
-      if(curso == null) {
-          return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                  .body(new ErroDTO("Curso " + dto.nomeCurso() + " não encontrado!"));
-      }
-
-      Usuario autor = usuarioRepository.findById(dto.autorId())
-              .orElseThrow(() -> new RuntimeException("Autor não encontrado!"));
-
-      Topico topico = new Topico(dto.titulo(),dto.mensagem(),curso,autor);
-      topicoRepository.save(topico);
-
-      TopicoResponseDTO response = new TopicoResponseDTO(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensagem(),
-                topico.getCurso().getNome(),
-                topico.getAutor().getNome(),
-                topico.getDataCriacao(),
-                topico.getStatus().name()
-        );
-
-
-        URI uri = URI.create("/topicos/" + topico.getId());
-      return ResponseEntity.created(uri).body(response);
-
+    public ResponseEntity<TopicoResponseDTO> cadastrar(@RequestBody @Valid TopicoRequestDTO dto) {
+        TopicoResponseDTO resposta = topicoService.cadastrar(dto);
+        URI uri = URI.create("/topicos/" + resposta.id());
+        return ResponseEntity.created(uri).body(resposta);
     }
 
     @GetMapping
-    public ResponseEntity<Page<TopicoResponseDTO>> listar(
-            @PageableDefault(size = 10, sort = "dataCriacao")Pageable paginacao
-            ) {
-        Page<Topico> pagina = topicoRepository.findAll(paginacao);
-
-        Page<TopicoResponseDTO> resposta = pagina.map(topico -> new TopicoResponseDTO(
-                        topico.getId(),
-                        topico.getTitulo(),
-                        topico.getMensagem(),
-                        topico.getCurso().getNome(),
-                        topico.getAutor().getNome(),
-                        topico.getDataCriacao(),
-                        topico.getStatus().name()
-                ));
-
-        return ResponseEntity.ok(resposta);
+    public ResponseEntity<Page<TopicoResponseDTO>> listar(@PageableDefault(size = 10, sort = "dataCriacao") Pageable paginacao) {
+        return ResponseEntity.ok(topicoService.listar(paginacao));
     }
 
     @GetMapping("/recentes")
     public ResponseEntity<List<TopicoResponseDTO>> listarRecentes() {
-        List<Topico> topicos = topicoRepository.findTop10ByOrderByDataCriacaoAsc();
-        List<TopicoResponseDTO> resposta = topicos.stream()
-                .map(topico -> new TopicoResponseDTO(
-                        topico.getId(),
-                        topico.getTitulo(),
-                        topico.getMensagem(),
-                        topico.getCurso().getNome(),
-                        topico.getAutor().getNome(),
-                        topico.getDataCriacao(),
-                        topico.getStatus().name()
-                )).toList();
-
-        return ResponseEntity.ok(resposta);
+        return ResponseEntity.ok(topicoService.listarRecentes());
     }
 
     @GetMapping("/buscar")
-    public ResponseEntity<List<TopicoResponseDTO>> buscarPorCursoEAno(
-            @RequestParam String nomeCurso,
-            @RequestParam int ano
-    ) {
-        List<Topico> topicos = topicoRepository.buscarPorCursoEAno(nomeCurso, ano);
-        List<TopicoResponseDTO> resposta = topicos.stream()
-                .map(topico -> new TopicoResponseDTO(
-                        topico.getId(),
-                        topico.getTitulo(),
-                        topico.getMensagem(),
-                        topico.getCurso().getNome(),
-                        topico.getAutor().getNome(),
-                        topico.getDataCriacao(),
-                        topico.getStatus().name()
-                )).toList();
-
-        return ResponseEntity.ok(resposta);
+    public ResponseEntity<List<TopicoResponseDTO>> buscarPorCursoEAno(@RequestParam String nomeCurso, @RequestParam int ano) {
+        return ResponseEntity.ok(topicoService.buscarPorCursoEAno(nomeCurso, ano));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> detalhar(@PathVariable Long id) {
-        Topico topico = topicoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico com ID " + id + " não encontrado!"));
-
-        TopicoResponseDTO resposta = new TopicoResponseDTO(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensagem(),
-                topico.getCurso().getNome(),
-                topico.getAutor().getNome(),
-                topico.getDataCriacao(),
-                topico.getStatus().name()
-        );
-
-        return ResponseEntity.ok(resposta);
+    public ResponseEntity<TopicoResponseDTO> detalhar(@PathVariable Long id) {
+        return ResponseEntity.ok(topicoService.detalhar(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody @Valid TopicoRequestDTO dto){
-        Optional<Topico> topicoOptional = topicoRepository.findById(id);
-
-     if(topicoOptional.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErroDTO("Tópico com ID " + " não encontrado!"));
-     }
-
-     Topico topico = topicoOptional.get();
-     if(topicoRepository.existsByTituloAndMensagem(dto.titulo(), dto.mensagem()) && (!topico.getTitulo().equals(dto.titulo()) || !topico.getMensagem().equals(dto.mensagem()))) {
-       return ResponseEntity.badRequest().body(new ErroDTO("Já existe outro tópico com esse título e mensagem!"));
-     }
-
-     Curso curso = cursoRepository.findByNome(dto.nomeCurso());
-     Usuario autor = usuarioRepository.findById(dto.autorId())
-             .orElseThrow(() -> new RuntimeException("Autor não encontrado!"));
-        topico.setTitulo(dto.titulo());
-        topico.setMensagem(dto.mensagem());
-        topico.setCurso(curso);
-        topico.setAutor(autor);
-
-        topicoRepository.save(topico);
-
-        TopicoResponseDTO resposta = new TopicoResponseDTO(
-                topico.getId(),
-                topico.getTitulo(),
-                topico.getMensagem(),
-                topico.getCurso().getNome(),
-                topico.getAutor().getNome(),
-                topico.getDataCriacao(),
-                topico.getStatus().name()
-        );
-
-        return ResponseEntity.ok(resposta);
+    public ResponseEntity<TopicoResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid TopicoRequestDTO dto) {
+        return ResponseEntity.ok(topicoService.atualizar(id, dto));
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<?> excluir(@PathVariable Long id) {
-
-        Optional<Topico> topicoOptional = topicoRepository.findById(id);
-
-        if(topicoOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErroDTO("Tópico com ID " + id + " não encontrado"));
-        }
-
-        topicoRepository.deleteById(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        topicoService.excluir(id);
         return ResponseEntity.noContent().build();
     }
-
 }
+
